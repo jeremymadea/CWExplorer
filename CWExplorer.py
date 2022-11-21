@@ -64,7 +64,6 @@ class WorkSpace(QWidget):
     """WorkSpace Class"""
     def __init__(self): 
         super().__init__()
-        
         #selector = ObjRegistry.get('main-palette-selector')
         self.palettedisplay = PaletteDisplay()
         selector = PaletteSelector()
@@ -75,14 +74,23 @@ class WorkSpace(QWidget):
         randmix.paletteCreated.connect(self.palettedisplay.setPalette)
         offsetpal.paletteCreated.connect(self.palettedisplay.setPalette)
 
+        tool_cb = QComboBox()
+         
+
         self.stack = QStackedLayout()
         self.stack.addWidget(randmix)
+        tool_cb.addItem("Random Mix")
         self.stack.addWidget(offsetpal)
+        tool_cb.addItem("Offset")
+
+        tool_cb.currentIndexChanged.connect(self.stack.setCurrentIndex)
         
         main_layout = QVBoxLayout(self)
         panel_layout = QHBoxLayout()
-
-        panel_layout.addLayout(self.stack, 1)
+        pl_left = QVBoxLayout()
+        pl_left.addWidget(tool_cb)
+        pl_left.addLayout(self.stack)
+        panel_layout.addLayout(pl_left, 1)
         #panel_layout.addWidget(randmix, 1)
         panel_layout.addWidget(selector, 1)
 

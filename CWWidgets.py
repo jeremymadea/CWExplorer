@@ -44,6 +44,46 @@ from GuiBones import ColorPatch
 
 from colorways import *
 
+class ColorModeCB(QComboBox):
+    """ColorModeCB"""
+    def __init__(self):
+        super().__init__()
+        self.addItem('RGB')
+        self.addItem('HSL')
+        self.addItem('HSV')
+
+class OffsetTypeCB(QComboBox):
+    """OffsetTypeCB"""
+    def __init__(self):
+        super().__init__()
+        self.addItem('Random')
+        self.addItem('Value')
+
+class EdgeFuncCB(QComboBox):
+    """EdgeFuncCB"""
+    def __init__(self):
+        super().__init__()
+        self.addItem('Clamp')
+        self.addItem('Reflect')
+
+class PaletteSizeSlider(QSlider):
+    """PaletteSizeSlider"""
+    def __init__(self):
+        super().__init__()
+        self.setOrientation(Qt.Horizontal)
+        self.setMinimum(1)
+        self.setMaximum(250)  
+
+class NormDial(QDial):
+    def __init__(self):
+        super().__init__()
+        self.setMinimum(0)
+        self.setMaximum(100)
+        self.setSingleStep(1)
+        self.setPageStep(25)
+        self.setNotchesVisible(True)
+        self.setValue(50)
+
 class PaletteDisplay(QWidget):
     """PaletteDisplay Class"""
     def __init__(self):
@@ -171,41 +211,6 @@ class PaletteSelector(QWidget):
         pal = json.loads(rcd.value(2))
         self.paletteSelected.emit(pal)
 
-class ColorModeCB(QComboBox):
-    def __init__(self):
-        super().__init__()
-        self.addItem('RGB')
-        self.addItem('HSL')
-        self.addItem('HSV')
-
-class OffsetTypeCB(QComboBox):
-    def __init__(self):
-        super().__init__()
-        self.addItem('Random')
-        self.addItem('Value')
-
-class EdgeFuncCB(QComboBox):
-    def __init__(self):
-        super().__init__()
-        self.addItem('Clamp')
-        self.addItem('Reflect')
-
-class PaletteSizeSlider(QSlider):
-    def __init__(self):
-        super().__init__()
-        self.setOrientation(Qt.Horizontal)
-        self.setMinimum(1)
-        self.setMaximum(250)  
-
-class NormDial(QDial):
-    def __init__(self):
-        super().__init__()
-        self.setMinimum(0)
-        self.setMaximum(100)
-        self.setSingleStep(1)
-        self.setPageStep(25)
-        self.setNotchesVisible(True)
-        self.setValue(50)
 
 class RandMixTool(QWidget):
     """RandomMixTool"""
@@ -216,7 +221,7 @@ class RandMixTool(QWidget):
         self.clrmode = ColorModeCB() 
 
         main_layout = QVBoxLayout(self)
-        main_layout.addWidget(QLabel('Random Mix'),0, Qt.AlignCenter)
+#        main_layout.addWidget(QLabel('Random Mix'),0, Qt.AlignCenter)
         row1_layout = QHBoxLayout()
         label_cm = QLabel('Color Mode:')
         row1_layout.addWidget(label_cm)
@@ -291,7 +296,7 @@ class OffsetPalTool(QWidget):
         self.sizesld = PaletteSizeSlider()
 
         main_layout = QVBoxLayout(self)
-        main_layout.addWidget(QLabel('Offset Palette'),0, Qt.AlignCenter)
+#        main_layout.addWidget(QLabel('Offset Palette'),0, Qt.AlignCenter)
         row1_layout = QHBoxLayout()
         label_cm = QLabel('Color Mode:')
         row1_layout.addWidget(label_cm)
