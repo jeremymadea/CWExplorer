@@ -171,16 +171,49 @@ class PaletteSelector(QWidget):
         pal = json.loads(rcd.value(2))
         self.paletteSelected.emit(pal)
 
+class ColorModeCB(QComboBox):
+    def __init__(self):
+        super().__init__()
+        self.addItem('RGB')
+        self.addItem('HSL')
+        self.addItem('HSV')
+
+class OffsetTypeCB(QComboBox):
+    def __init__(self):
+        super().__init__()
+        self.addItem('Random')
+        self.addItem('Value')
+
+class EdgeFuncCB(QComboBox):
+    def __init__(self):
+        super().__init__()
+        self.addItem('Clamp')
+        self.addItem('Reflect')
+
+class PaletteSizeSlider(QSlider):
+    def __init__(self):
+        super().__init__()
+        self.setOrientation(Qt.Horizontal)
+        self.setMinimum(1)
+        self.setMaximum(250)  
+
+class NormDial(QDial):
+    def __init__(self):
+        super().__init__()
+        self.setMinimum(0)
+        self.setMaximum(100)
+        self.setSingleStep(1)
+        self.setPageStep(25)
+        self.setNotchesVisible(True)
+        self.setValue(50)
+
 class RandMixTool(QWidget):
-    """RandomPaletteSelector"""
+    """RandomMixTool"""
     paletteCreated = Signal(list)
     def __init__(self):
         super().__init__()
         self.baseclr = ColorPatch()
-        self.clrmode = QComboBox() 
-        self.clrmode.addItem("RGB")
-        self.clrmode.addItem("HSL")
-        self.clrmode.addItem("HSV")
+        self.clrmode = ColorModeCB() 
 
         main_layout = QVBoxLayout(self)
         main_layout.addWidget(QLabel('Random Mix'),0, Qt.AlignCenter)
@@ -202,13 +235,7 @@ class RandMixTool(QWidget):
         cw_layout = QVBoxLayout()
         label_cw = QLabel('Weight')
         label_cw.setAlignment(Qt.AlignCenter)
-        self.cw_dial = QDial()
-        self.cw_dial.setMinimum(0)
-        self.cw_dial.setMaximum(100)
-        self.cw_dial.setSingleStep(1)
-        self.cw_dial.setPageStep(25)
-        self.cw_dial.setNotchesVisible(True)
-        self.cw_dial.setValue(50)
+        self.cw_dial = NormDial()
         cw_layout.addWidget(self.cw_dial, Qt.AlignCenter)
         cw_layout.addWidget(label_cw)
         cw_layout.addStretch()
@@ -216,10 +243,7 @@ class RandMixTool(QWidget):
         row3_layout = QHBoxLayout()
         label_ps = QLabel('Size:')
         row3_layout.addWidget(label_ps)
-        self.sizesl = QSlider()
-        self.sizesl.setOrientation(Qt.Horizontal)
-        self.sizesl.setMinimum(1)
-        self.sizesl.setMaximum(250)  
+        self.sizesl = PaletteSizeSlider()
         row3_layout.addWidget(self.sizesl)
 
         row2_layout.addLayout(cw_layout)
@@ -253,4 +277,95 @@ class RandMixTool(QWidget):
         self.palette = palette
         self.paletteCreated.emit(self.palette)
 
+
+class OffsetPalTool(QWidget):
+    """OffsetPalTool"""
+    paletteCreated = Signal(list)
+    def __init__(self):
+        super().__init__()
+        self.baseclr = ColorPatch()
+        self.clrmode = ColorModeCB()
+        self.offtype = OffsetTypeCB()
+        self.edgefun = EdgeFuncCB()
+        self.rngdial = NormDial()
+        self.sizesld = PaletteSizeSlider()
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(QLabel('Offset Palette'),0, Qt.AlignCenter)
+        row1_layout = QHBoxLayout()
+        label_cm = QLabel('Color Mode:')
+        row1_layout.addWidget(label_cm)
+        row1_layout.addWidget(self.clrmode)
+
+        row1b_layout = QHBoxLayout()
+        label_ot = QLabel('Offset:')
+        row1b_layout.addWidget(label_ot)
+        row1b_layout.addWidget(self.offtype)
+        label_ef = QLabel('Edge:')
+        row1b_layout.addWidget(label_ef)
+        row1b_layout.addWidget(self.edgefun)
+
+        row2_layout = QHBoxLayout()
+ 
+        bc_layout = QVBoxLayout()
+        bc_layout.addItem(
+            QSpacerItem(0,0, QSizePolicy.Expanding, QSizePolicy.Expanding))
+        label_bc = QLabel('Base')
+        label_bc.setAlignment(Qt.AlignCenter)
+        bc_layout.addWidget(self.baseclr, 0, Qt.AlignCenter)
+        bc_layout.addWidget(label_bc)
+
+        rg_layout = QVBoxLayout()
+        label_rg = QLabel('Range')
+        label_rg.setAlignment(Qt.AlignCenter)
+        rg_layout.addWidget(self.rngdial, Qt.AlignCenter)
+        rg_layout.addWidget(label_rg)
+        rg_layout.addStretch()
+
+        row3_layout = QHBoxLayout()
+        label_ps = QLabel('Size:')
+        row3_layout.addWidget(label_ps)
+        row3_layout.addWidget(self.sizesld)
+
+        row2_layout.addLayout(rg_layout)
+        row2_layout.addLayout(bc_layout)
+        row2_layout.setStretch(0,1)
+        create_btn = QPushButton("Create")
+        create_btn.clicked.connect(self.onCreate)
+        main_layout.addLayout(row1_layout)
+        main_layout.addLayout(row1b_layout)
+        main_layout.addLayout(row2_layout)
+        main_layout.addLayout(row3_layout)
+        main_layout.addWidget(create_btn)
+        main_layout.addStretch()
+        self.setLayout(main_layout)
+        
+    def onCreate(self):
+        n = self.sizesld.value()
+        rng = self.rngdial.value()/100
+        base = self.baseclr.getHex()
+        mode = self.clrmode.currentText()
+        offset = self.offtype.currentText()
+        edge = self.edgefun.currentText()
+        
+        edgefn = clamp01
+        if edge == 'Reflect':
+            edgefn = reflect
+
+        palette_generator = random_offset_palette
+        if offset == 'Value':
+            palette_generator = value_offset_palette
+
+        if mode == 'HSL':
+            base = hex2hsl(base)
+            palette = hsl2hex(palette_generator(n, base, rng, edgefn))
+        elif mode == 'HSV':
+            base = hex2hsv(base)
+            palette = hsv2hex(palette_generator(n, base, rng, edgefn))
+        elif mode == 'RGB': 
+            base = hex2rgb(base)
+            palette = rgb2hex(palette_generator(n, base, rng, edgefn))
+
+        self.palette = palette
+        self.paletteCreated.emit(self.palette)
 

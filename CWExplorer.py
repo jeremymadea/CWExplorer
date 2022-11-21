@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSlider,
     QSpacerItem,
+    QStackedLayout,
     QStatusBar,
     QToolBar,
     QTableView,
@@ -63,20 +64,34 @@ class WorkSpace(QWidget):
     """WorkSpace Class"""
     def __init__(self): 
         super().__init__()
+        
+        #selector = ObjRegistry.get('main-palette-selector')
+        self.palettedisplay = PaletteDisplay()
+        selector = PaletteSelector()
+        randmix = RandMixTool()
+        offsetpal = OffsetPalTool()
+
+        selector.paletteSelected.connect(self.palettedisplay.setPalette)
+        randmix.paletteCreated.connect(self.palettedisplay.setPalette)
+        offsetpal.paletteCreated.connect(self.palettedisplay.setPalette)
+
+        self.stack = QStackedLayout()
+        self.stack.addWidget(randmix)
+        self.stack.addWidget(offsetpal)
+        
         main_layout = QVBoxLayout(self)
         panel_layout = QHBoxLayout()
-        self.randmix = RandMixTool()
-        panel_layout.addWidget(self.randmix, 1)
-        panel_layout.addWidget(PaletteSelector(), 1)
-        self.palettedisplay = PaletteDisplay()
-        self.randmix.paletteCreated.connect(self.palettedisplay.setPalette)
-        selector = ObjRegistry.get('main-palette-selector')
-        selector.paletteSelected.connect(self.palettedisplay.setPalette)
+
+        panel_layout.addLayout(self.stack, 1)
+        #panel_layout.addWidget(randmix, 1)
+        panel_layout.addWidget(selector, 1)
+
         main_layout.addLayout(panel_layout)
         main_layout.addWidget(self.palettedisplay)
         main_layout.setStretch(0, 1)
         main_layout.setStretch(1, 1)
         self.setLayout(main_layout)
+
 
 class MainWindow(QMainWindow):
     """Main Window class"""
